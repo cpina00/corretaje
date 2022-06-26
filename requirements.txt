@@ -1,2 +1,11 @@
 fastapi
 uvicorn
+python-dotenv
+psycopg2-binary
+peewee
+pydantic[email]
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+pytest
+requests
