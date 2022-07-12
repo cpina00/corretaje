@@ -2,6 +2,7 @@ from doctest import Example
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import EmailStr
+from typing import Optional
 
 class UserBase(BaseModel):
     email: EmailStr = Field(..., example="cpina@icci.cl")
@@ -22,4 +23,7 @@ class UserRegister(UserBase):
         max_length=64,
         example= "strongpass!"
         )
-    
+
+class UserEdit(BaseModel):
+    email: Optional[str] = None,
+    username: Optional[str] = None

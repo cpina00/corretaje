@@ -1,13 +1,10 @@
 from fastapi import APIRouter
-from fastapi import status
-
-from fastapi import Depends
-from fastapi import Body
-from fastapi import Header
+from fastapi import status, Depends
+from fastapi import Header, Path, Body, Query
 
 from fastapi.security import OAuth2PasswordRequestForm
 
-from typing import Union
+from typing import Union, Optional
 from typing import List
 
 
@@ -17,8 +14,10 @@ from api.user.service import auth_service
 from api.user.schema.token_schema import Token
 
 from api.utils.db import get_db
-from api.user.service.auth_service import get_current_user 
 from api.user.service.user_service import list_users
+from api.user.service.user_service import get_user
+from api.user.service.user_service import delete_user as delete_user_db
+from api.user.service.user_service import edit_user as edit_user_db
 
 from typing import Union
 
@@ -26,7 +25,7 @@ from api.user.model.user_model import User as UserModel
 
 
 route = APIRouter(
-    prefix="/api",
+    prefix="/user",
     tags=["users"]
 )
 
@@ -51,9 +50,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = auth_service.generate_token(form_data.username, form_data.password)
     return Token(access_token=access_token, token_type="bearer")
 
-
-
-
 @route.get(
     "/",
     status_code=status.HTTP_200_OK,
@@ -67,13 +63,13 @@ def home():
 @route.get(
     "/{id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(get_db), Depends(get_current_user)],
-    summary="Summari donde estás?"
+    dependencies=[Depends(get_db)],
+    summary="Summari donde estás?",
+    response_model=user_schema.User,
     )
 def detail_user(id:int):
     """return the detail a user id"""
-    return {"The user is":id}
-
+    return get_user(id)
 
 @route.post(
     "/user/", 
@@ -97,23 +93,22 @@ def create_user(user: user_schema.UserRegister = Body(...)):
     """
     return user_service.create_user(user)
 
-
-
 @route.delete(
     "/{id}",
     status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_user(id:int):
-    message = f"resouce {id} delete successful"
-    return message
+    delete = delete_user_db(id)
+    return {"delete":id}
 
 @route.put(
     "/{id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK
 )
-def update_user(id:int):
-    message = f"resouce {id} update successful"
-    return message
+def update_user(u:user_schema.User):
+    user = edit_user_db(u)
+    us = user_schema.User
+    return {"User edit": user}
 
 
 @route.get("/header/", tags=["header"])
